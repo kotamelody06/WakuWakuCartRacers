@@ -28,7 +28,7 @@ jobs:
         run: |
           mkdir -p build/ios
           ./Godot.app/Contents/MacOS/Godot --headless --import
-          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" build/ios/${APP_NAME}.ipa
+          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iPad" build/ios/${APP_NAME}.ipa
 
       - name: 署名なしでビルド
         run: |
