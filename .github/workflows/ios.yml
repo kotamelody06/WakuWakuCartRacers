@@ -1,1 +1,55 @@
+name: iOS Unsigned Build
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
 
+jobs:
+  ios:
+    runs-on: macos-latest
+    env:
+      GODOT_VERSION: "4.5"   # ローカルと同じバージョン（例: 4.4.1）
+      APP_NAME: "WakuWakuCartRacers"       # 書き出し名
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Godotとエクスポートテンプレートを取得
+        run: |
+          BASE=https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable
+          curl -L -o godot.zip $BASE/Godot_v${GODOT_VERSION}-stable_macos.universal.zip
+          unzip -q godot.zip
+          curl -L -o templates.tpz $BASE/Godot_v${GODOT_VERSION}-stable_export_templates.tpz
+          unzip -q templates.tpz
+          DEST="$HOME/Library/Application Support/Godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$DEST"
+          mv templates/* "$DEST/"
+
+      - name: Xcodeプロジェクトを書き出し
+        run: |
+          mkdir -p build/ios
+          ./Godot.app/Contents/MacOS/Godot --headless --import
+          ./Godot.app/Contents/MacOS/Godot --headless --export-release "iOS" build/ios/${APP_NAME}.ipa
+
+      - name: 署名なしでビルド
+        run: |
+          xcodebuild \
+            -project build/ios/${APP_NAME}.xcodeproj \
+            -scheme ${APP_NAME} \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: 署名なしipaを作成
+        run: |
+          mkdir -p Payload
+          cp -R build/dd/Build/Products/Release-iphoneos/${APP_NAME}.app Payload/
+          zip -qr ${APP_NAME}-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-unsigned
+          path: "*-unsigned.ipa"
