@@ -10,8 +10,8 @@ config_version=5
 
 [application]
 
-config/name="わくわくカートレーサーズ"
-config/description="オリジナルキャラクターで走る3Dカートレース"
+config/name="WakuWakuCartRacers"
+config/description="Simple 3D cart race."
 run/main_scene="res://scenes/MainMenu.tscn"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
